@@ -1,0 +1,46 @@
+{
+  "name": "@builtbyecho/git-digest",
+  "version": "1.0.0",
+  "description": "Concise, structured git repository summaries for AI agents and developers. Branch status, recent commits, change hotspots, and open PRs in one command.",
+  "type": "module",
+  "bin": {
+    "git-digest": "src/cli.js"
+  },
+  "exports": {
+    ".": "./src/index.js"
+  },
+  "files": [
+    "src",
+    "README.md",
+    "LICENSE"
+  ],
+  "scripts": {
+    "test": "node --test test/*.js",
+    "smoke": "node src/cli.js"
+  },
+  "keywords": [
+    "git",
+    "cli",
+    "ai-agent",
+    "developer-tools",
+    "context",
+    "repository",
+    "summary",
+    "digest",
+    "agents",
+    "builtbyecho"
+  ],
+  "author": "BuiltByEcho",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/BuiltByEcho/git-digest.git"
+  },
+  "homepage": "https://github.com/BuiltByEcho/git-digest#readme",
+  "bugs": {
+    "url": "https://github.com/BuiltByEcho/git-digest/issues"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  }
+}
