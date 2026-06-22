@@ -1,10 +1,12 @@
 import { describe, it } from "node:test";
 import assert from "node:assert/strict";
 import { digest, toMarkdown, toCompact } from "../src/index.js";
-import { execSync } from "node:child_process";
+import { execFileSync } from "node:child_process";
+import { dirname } from "node:path";
+import { fileURLToPath } from "node:url";
 
 // Use the git-digest project itself as a test repo
-const testCwd = new URL("..", import.meta.url).pathname.replace(/\/$/, "");
+const testCwd = dirname(dirname(fileURLToPath(import.meta.url)));
 
 describe("digest", () => {
   it("returns a structured object with expected keys", () => {
@@ -103,7 +105,7 @@ describe("toCompact", () => {
 
 describe("CLI smoke test", () => {
   it("runs without error in default markdown mode", () => {
-    const output = execSync(`node src/cli.js ${testCwd}`, {
+    const output = execFileSync(process.execPath, ["src/cli.js", testCwd], {
       cwd: testCwd,
       encoding: "utf8",
     });
@@ -111,7 +113,7 @@ describe("CLI smoke test", () => {
   });
 
   it("produces valid JSON in json mode", () => {
-    const output = execSync(`node src/cli.js ${testCwd} --format json`, {
+    const output = execFileSync(process.execPath, ["src/cli.js", testCwd, "--format", "json"], {
       cwd: testCwd,
       encoding: "utf8",
     });
@@ -121,7 +123,7 @@ describe("CLI smoke test", () => {
   });
 
   it("produces compact single-line output", () => {
-    const output = execSync(`node src/cli.js ${testCwd} --format compact`, {
+    const output = execFileSync(process.execPath, ["src/cli.js", testCwd, "--format", "compact"], {
       cwd: testCwd,
       encoding: "utf8",
     }).trim();
@@ -130,7 +132,7 @@ describe("CLI smoke test", () => {
   });
 
   it("respects --commits flag", () => {
-    const output = execSync(`node src/cli.js ${testCwd} --format json --commits 2`, {
+    const output = execFileSync(process.execPath, ["src/cli.js", testCwd, "--format", "json", "--commits", "2"], {
       cwd: testCwd,
       encoding: "utf8",
     });

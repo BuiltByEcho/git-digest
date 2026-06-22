@@ -1,6 +1,6 @@
 {
   "name": "@builtbyecho/git-digest",
-  "version": "1.0.0",
+  "version": "1.0.2",
   "description": "Concise, structured git repository summaries for AI agents and developers. Branch status, recent commits, change hotspots, and open PRs in one command.",
   "type": "module",
   "bin": {

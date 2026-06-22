@@ -139,3 +139,7 @@ branch=main head=a1b2c3d status=clean | vs-main=ahead0/behind0 | tag=v1.0.0+5 | 
 ## License
 
 MIT © BuiltByEcho
+
+## Release Automation
+
+This package is published from GitHub Actions using npm Trusted Publishing with provenance. Releases are built on GitHub-hosted runners and no long-lived npm publish token is required.
