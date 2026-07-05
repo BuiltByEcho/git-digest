@@ -28,7 +28,8 @@
     "summary",
     "digest",
     "agents",
-    "builtbyecho"
+    "builtbyecho",
+    "agent-tooling"
   ],
   "author": "BuiltByEcho",
   "license": "MIT",

@@ -8,6 +8,20 @@ Get branch status, recent commits, change hotspots, and open PRs in a single com
 
 Every time an AI agent starts working on a repository, it needs context: *what branch am I on? Is the tree clean? What changed recently? Which files are hotspots? Are there open PRs?* Parsing raw `git log` and `git status` output wastes tokens and is error-prone. `git-digest` gives you all of that in one structured, agent-friendly output.
 
+## Fits in the Echo agent toolchain
+
+Use `git-digest` before and after agent work. Before a task, it shows the current branch, dirty state, recent commits, hotspots, and open PRs. After a task, it gives a compact change receipt that pairs cleanly with `agent-runlog` output.
+
+This is the repo-awareness layer for Echo builds: fast enough for local use, structured enough for automation, and readable enough for public build notes.
+
+## Refresh smoke
+
+```bash
+npm test
+npm run smoke
+npm pack --dry-run --json
+```
+
 ## Install
 
 ```bash
