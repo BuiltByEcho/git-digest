@@ -38,20 +38,43 @@ function getHeadHash(cwd) {
  * Get working tree status: "clean" or "dirty" with counts.
  */
 function getStatus(cwd) {
-  const raw = git("status --porcelain", cwd);
-  if (raw === null) return { state: "unknown" };
-  if (raw === "") return { state: "clean" };
+  try {
+    const raw = execSync("git status --porcelain", {
+      cwd,
+      encoding: "utf8",
+      stdio: ["pipe", "pipe", "pipe"],
+    }).trimEnd();
+    return parsePorcelainStatus(raw);
+  } catch {
+    return parsePorcelainStatus(null);
+  }
+}
 
-  const lines = raw.split("\n");
+export function parsePorcelainStatus(raw) {
+  if (raw === null) return { state: "unknown", files: [] };
+  if (raw === "") return { state: "clean", files: [] };
+
+  const lines = raw.split("\n").filter(Boolean);
   let staged = 0, unstaged = 0, untracked = 0;
-  for (const line of lines) {
+  const files = lines.map((line) => {
     const x = line[0], y = line[1];
     if (x !== " " && x !== "?") staged++;
     if (y !== " " && y !== "?") unstaged++;
     if (x === "?" && y === "?") untracked++;
-  }
-  // Untracked are counted in both staged+y, correct for that
-  return { state: "dirty", staged, unstaged, untracked, total: lines.length };
+
+    const rawPath = line.slice(3);
+    const [from, renamedPath] = rawPath.includes(" -> ") ? rawPath.split(" -> ") : [null, rawPath];
+    const code = x === "?" && y === "?" ? "?" : y !== " " ? y : x;
+    const status = code === "?" ? "untracked"
+      : code === "A" ? "added"
+        : code === "D" ? "deleted"
+          : code === "R" ? "renamed"
+            : code === "C" ? "copied"
+              : "modified";
+    return from ? { path: renamedPath, status, from } : { path: renamedPath, status };
+  });
+
+  return { state: "dirty", staged, unstaged, untracked, total: lines.length, files };
 }
 
 /**
@@ -242,6 +265,15 @@ export function toMarkdown(d) {
 
   if (d.status.state === "dirty") {
     lines.push(`**Changes:** ${d.status.staged} staged · ${d.status.unstaged} unstaged · ${d.status.untracked} untracked`);
+    if (d.status.files?.length) {
+      lines.push("");
+      lines.push("## Working Tree Changes");
+      lines.push("");
+      for (const file of d.status.files.slice(0, 20)) {
+        lines.push(`- ${file.path} — ${file.status}${file.from ? ` from ${file.from}` : ""}`);
+      }
+      if (d.status.files.length > 20) lines.push(`- ... ${d.status.files.length - 20} more`);
+    }
   }
 
   lines.push("");

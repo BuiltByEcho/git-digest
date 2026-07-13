@@ -2,7 +2,7 @@
 
 **Concise, structured git repository summaries for AI agents and developers.**
 
-Get branch status, recent commits, change hotspots, and open PRs in a single command — formatted for humans, agents, or pipelines.
+Get branch status, exact working-tree paths, recent commits, change hotspots, and open PRs in a single command — formatted for humans, agents, or pipelines.
 
 ## Why?
 
@@ -92,7 +92,14 @@ console.log(JSON.stringify(d, null, 2)); // Raw JSON
 {
   "branch": "main",
   "headHash": "a1b2c3d",
-  "status": { "state": "clean" },
+  "status": {
+    "state": "dirty",
+    "staged": 0,
+    "unstaged": 1,
+    "untracked": 0,
+    "total": 1,
+    "files": [{ "path": "README.md", "status": "modified" }]
+  },
   "aheadBehind": { "base": "main", "ahead": 0, "behind": 0 },
   "recentCommits": [
     { "hash": "a1b2c3d", "subject": "Add feature X", "author": "dev", "relativeDate": "2 hours ago", "files": ["src/x.js"] }

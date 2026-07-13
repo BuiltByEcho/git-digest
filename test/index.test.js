@@ -1,12 +1,47 @@
 import { describe, it } from "node:test";
 import assert from "node:assert/strict";
-import { digest, toMarkdown, toCompact } from "../src/index.js";
+import { digest, parsePorcelainStatus, toMarkdown, toCompact } from "../src/index.js";
 import { execFileSync } from "node:child_process";
-import { dirname } from "node:path";
+import { dirname, join } from "node:path";
+import { appendFileSync, mkdtempSync, writeFileSync } from "node:fs";
+import { tmpdir } from "node:os";
 import { fileURLToPath } from "node:url";
 
 // Use the git-digest project itself as a test repo
 const testCwd = dirname(dirname(fileURLToPath(import.meta.url)));
+
+describe("parsePorcelainStatus", () => {
+  it("returns the actual changed paths and normalized statuses", () => {
+    const status = parsePorcelainStatus([
+      " M README.md",
+      "A  src/new.js",
+      "?? notes.txt",
+      "R  old.js -> new.js",
+    ].join("\n"));
+
+    assert.equal(status.state, "dirty");
+    assert.equal(status.total, 4);
+    assert.deepEqual(status.files, [
+      { path: "README.md", status: "modified" },
+      { path: "src/new.js", status: "added" },
+      { path: "notes.txt", status: "untracked" },
+      { path: "new.js", status: "renamed", from: "old.js" },
+    ]);
+    assert.match(toMarkdown({
+      branch: "main",
+      headHash: "abc1234",
+      status,
+      stashCount: 0,
+      aheadBehind: { base: "main", ahead: 0, behind: 0 },
+      lastTag: null,
+      remote: null,
+      recentCommits: [],
+      hotspots: [],
+      contributors: { count: 0, top: [] },
+      openPRs: null,
+    }), /Working Tree Changes[\s\S]*README\.md — modified[\s\S]*new\.js — renamed from old\.js/);
+  });
+});
 
 describe("digest", () => {
   it("returns a structured object with expected keys", () => {
@@ -28,6 +63,20 @@ describe("digest", () => {
   it("detects working tree status", () => {
     const d = digest(testCwd);
     assert.ok(["clean", "dirty", "unknown"].includes(d.status.state));
+  });
+
+  it("preserves the first character of unstaged file paths", () => {
+    const dir = mkdtempSync(join(tmpdir(), "git-digest-unstaged-"));
+    execFileSync("git", ["init"], { cwd: dir, stdio: "ignore" });
+    execFileSync("git", ["config", "user.name", "Echo"], { cwd: dir });
+    execFileSync("git", ["config", "user.email", "echo@example.com"], { cwd: dir });
+    writeFileSync(join(dir, "README.md"), "before\n");
+    execFileSync("git", ["add", "README.md"], { cwd: dir });
+    execFileSync("git", ["commit", "-m", "initial"], { cwd: dir, stdio: "ignore" });
+    appendFileSync(join(dir, "README.md"), "after\n");
+
+    const d = digest(dir, { includePRs: false });
+    assert.deepEqual(d.status.files, [{ path: "README.md", status: "modified" }]);
   });
 
   it("returns recent commits with structure", () => {
